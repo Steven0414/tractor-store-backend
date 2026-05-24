@@ -1,5 +1,12 @@
 # Deployment Guide — Backend
 
+## Prerequisites
+
+| Tool | Notes |
+|---|---|
+| PostgreSQL 16+ | Must exist before first deploy; Flyway handles schema |
+| Docker 24+ | For containerised deployment |
+
 ## Building
 
 ### Maven (JAR)
@@ -16,34 +23,57 @@ java -jar target/catalog-service-1.0.0.jar
 # Build image
 docker build -t tractor-store/catalog-service:latest ./catalog-service
 
-# Run container
-docker run -p 8080:8080 tractor-store/catalog-service:latest
+# Run container (point to an existing PostgreSQL instance)
+docker run -p 8080:8080 \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:5432/tractordb \
+  -e SPRING_DATASOURCE_USERNAME=tractoruser \
+  -e SPRING_DATASOURCE_PASSWORD=<password> \
+  tractor-store/catalog-service:latest
+```
+
+### Docker Compose (local development)
+
+```bash
+cd tractor-store-backend
+cp .env.example .env   # set credentials
+docker compose up
 ```
 
 ## Dockerfile Overview
 
-The service uses a two-stage build (if a Dockerfile is present) or a single
-stage if built from the fat JAR:
+Two-stage build: Maven compiles the JAR, then a minimal JRE image runs it.
 
 ```dockerfile
+FROM maven:3.9-eclipse-temurin-17-alpine AS builder
+# ... compile + package
+
 FROM eclipse-temurin:17-jre-alpine
-COPY target/catalog-service-*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
-> If a multi-stage build is preferred, add a `maven:3.9-eclipse-temurin-17`
-> builder stage to compile the JAR inside Docker.
+## Schema Management
+
+Flyway runs automatically on startup and applies any pending migrations:
+
+```
+db/migration/
+  V1__initial_schema.sql     ← All module tables (catalog_, inventory_, cart_, order_)
+  V2__seed_catalog_data.sql  ← Products, categories, stores
+  V3__seed_inventory_stock.sql ← Initial inventory (10 units/SKU)
+```
+
+**Never** set `spring.jpa.hibernate.ddl-auto=update` or `create-drop` in
+production. The production default is `validate`.
 
 ## Environment Variables
 
-Override any `application.properties` key at runtime:
-
-```bash
-docker run -p 8080:8080 \
-  -e SERVER_PORT=8080 \
-  tractor-store/catalog-service:latest
-```
+| Variable | Default | Description |
+|---|---|---|
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/tractordb` | JDBC connection string |
+| `SPRING_DATASOURCE_USERNAME` | `tractoruser` | DB user |
+| `SPRING_DATASOURCE_PASSWORD` | `tractorpass` | DB password |
+| `SPRING_PROFILES_ACTIVE` | *(none)* | Set to `dev` for SQL logging |
 
 ## CORS in Production
 
@@ -70,4 +100,5 @@ curl -f http://localhost:8080/actuator/health
 | Service | Default port |
 |---|---|
 | catalog-service | 8080 |
-| H2 console (dev) | 8080/h2-console |
+| PostgreSQL | 5432 |
+

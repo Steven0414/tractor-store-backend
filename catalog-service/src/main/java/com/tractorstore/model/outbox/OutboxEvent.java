@@ -2,28 +2,36 @@ package com.tractorstore.model.outbox;
 
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
-@Table(name = "outbox_events")
+@Table(
+    name = "order_outbox_events",
+    indexes = {
+        @Index(name = "idx_outbox_processed",     columnList = "processed"),
+        @Index(name = "idx_outbox_aggregate_id",  columnList = "aggregate_id")
+    }
+)
 public class OutboxEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "aggregate_type", nullable = false, length = 50)
     private String aggregateType;
 
-    @Column(nullable = false)
+    @Column(name = "aggregate_id", nullable = false)
     private String aggregateId;
 
-    @Column(nullable = false)
+    @Column(name = "event_type", nullable = false, length = 50)
     private String eventType;
 
+    /** Stored as JSONB in PostgreSQL; TEXT in H2 for tests. */
     @Column(nullable = false, length = 4096)
     private String payload;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     @Column(nullable = false)
@@ -39,7 +47,7 @@ public class OutboxEvent {
         this.createdAt = Instant.now();
     }
 
-    public String getId() { return id; }
+    public UUID getId() { return id; }
     public String getAggregateType() { return aggregateType; }
     public String getAggregateId() { return aggregateId; }
     public String getEventType() { return eventType; }
@@ -48,3 +56,4 @@ public class OutboxEvent {
     public boolean isProcessed() { return processed; }
     public void markProcessed() { this.processed = true; }
 }
+

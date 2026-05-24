@@ -1,10 +1,17 @@
 package com.tractorstore.service;
 
-import com.tractorstore.data.CatalogData;
+import com.tractorstore.model.Category;
 import com.tractorstore.model.HomeData;
 import com.tractorstore.model.Product;
 import com.tractorstore.model.Store;
+import com.tractorstore.model.catalog.CatalogCategoryEntity;
+import com.tractorstore.model.catalog.CatalogProductEntity;
+import com.tractorstore.model.catalog.CatalogStoreEntity;
+import com.tractorstore.repository.CatalogCategoryRepository;
+import com.tractorstore.repository.CatalogProductRepository;
+import com.tractorstore.repository.CatalogStoreRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,20 +20,28 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class CatalogService {
 
     private static final int MAX_RECOMMENDATIONS = 6;
+    private static final int FEATURED_COUNT = 4;
 
-    private final CatalogData catalogData;
+    private final CatalogProductRepository productRepository;
+    private final CatalogCategoryRepository categoryRepository;
+    private final CatalogStoreRepository storeRepository;
 
-    public CatalogService(CatalogData catalogData) {
-        this.catalogData = catalogData;
+    public CatalogService(CatalogProductRepository productRepository,
+                          CatalogCategoryRepository categoryRepository,
+                          CatalogStoreRepository storeRepository) {
+        this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
+        this.storeRepository = storeRepository;
     }
 
     public HomeData getHome() {
-        var products   = catalogData.getAllProducts();
-        var categories = catalogData.getAllCategories();
-        var featured   = products.subList(0, Math.min(4, products.size()));
+        List<Product> products = toProductDtos(productRepository.findAll());
+        List<Category> categories = toCategoryDtos(categoryRepository.findAll());
+        List<Product> featured = products.subList(0, Math.min(FEATURED_COUNT, products.size()));
         return new HomeData(
             "Bienvenido a The Tractor Store",
             "Encuentra el tractor perfecto para tu campo",
@@ -36,29 +51,19 @@ public class CatalogService {
     }
 
     public List<Product> getProductsByFilter(String filter) {
-        var all = catalogData.getAllProducts();
-        return switch (filter.toLowerCase()) {
-            case "all" -> all;
-            default    -> all.stream()
-                             .filter(p -> p.category().equalsIgnoreCase(filter))
-                             .toList();
-        };
+        if ("all".equalsIgnoreCase(filter)) {
+            return toProductDtos(productRepository.findAll());
+        }
+        return toProductDtos(productRepository.findByCategory(filter));
     }
 
     public List<Store> getStores() {
-        return catalogData.getAllStores();
+        return toStoreDtos(storeRepository.findAll());
     }
 
     /**
      * Returns up to {@value #MAX_RECOMMENDATIONS} products whose colors are closest
      * (Euclidean RGB distance) to the colors of the requested SKUs.
-     *
-     * Algorithm (pure Java):
-     *  1. Resolve the hex color of each requested SKU.
-     *  2. For every other product, compute its minimum RGB distance to any reference color.
-     *  3. Sort ascending by that distance and return the top results.
-     *
-     * @param skusCsv comma-separated SKU codes, e.g. "TRK-001,AUT-002"
      */
     public List<Product> getRecommendations(String skusCsv) {
         Set<String> requestedSkus = Arrays.stream(skusCsv.split(","))
@@ -67,7 +72,9 @@ public class CatalogService {
             .map(String::toUpperCase)
             .collect(Collectors.toUnmodifiableSet());
 
-        Map<String, Product> skuIndex = catalogData.getAllProducts().stream()
+        List<Product> allProducts = toProductDtos(productRepository.findAll());
+
+        Map<String, Product> skuIndex = allProducts.stream()
             .collect(Collectors.toMap(p -> p.sku().toUpperCase(), p -> p));
 
         List<String> referenceColors = requestedSkus.stream()
@@ -79,7 +86,7 @@ public class CatalogService {
             return List.of();
         }
 
-        return catalogData.getAllProducts().stream()
+        return allProducts.stream()
             .filter(p -> !requestedSkus.contains(p.sku().toUpperCase()))
             .sorted(java.util.Comparator.comparingDouble(
                 p -> ColorDistanceService.minDistanceToAny(p.color(), referenceColors)
@@ -87,4 +94,56 @@ public class CatalogService {
             .limit(MAX_RECOMMENDATIONS)
             .toList();
     }
+
+    // ── Entity → DTO mappers ───────────────────────────────────────────────
+
+    private static Product toProductDto(CatalogProductEntity e) {
+        return new Product(
+            e.getId().toString(),
+            e.getSku(),
+            e.getName(),
+            e.getPrice().doubleValue(),
+            e.getImageUrl(),
+            e.getCategory(),
+            e.getColor(),
+            e.getMotor()
+        );
+    }
+
+    private static Category toCategoryDto(CatalogCategoryEntity e) {
+        return new Category(
+            e.getId().toString(),
+            e.getName(),
+            e.getFilter(),
+            e.getImageUrl(),
+            e.getDescription()
+        );
+    }
+
+    private static Store toStoreDto(CatalogStoreEntity e) {
+        return new Store(
+            e.getId().toString(),
+            e.getName(),
+            e.getAddress(),
+            e.getCity(),
+            e.getPhone(),
+            e.getEmail(),
+            e.getLatitude(),
+            e.getLongitude(),
+            e.getOpeningHours()
+        );
+    }
+
+    private static List<Product> toProductDtos(List<CatalogProductEntity> entities) {
+        return entities.stream().map(CatalogService::toProductDto).toList();
+    }
+
+    private static List<Category> toCategoryDtos(List<CatalogCategoryEntity> entities) {
+        return entities.stream().map(CatalogService::toCategoryDto).toList();
+    }
+
+    private static List<Store> toStoreDtos(List<CatalogStoreEntity> entities) {
+        return entities.stream().map(CatalogService::toStoreDto).toList();
+    }
 }
+

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CatalogService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">catalog-service</a> &gt; <a href="index.source.html" class="el_package">com.tractorstore.service</a> &gt; <span class="el_source">CatalogService.java</span></div><h1>CatalogService.java</h1><pre class="source lang-java linenums">package com.tractorstore.service;
+
+import com.tractorstore.model.Category;
+import com.tractorstore.model.HomeData;
+import com.tractorstore.model.Product;
+import com.tractorstore.model.Store;
+import com.tractorstore.model.catalog.CatalogCategoryEntity;
+import com.tractorstore.model.catalog.CatalogProductEntity;
+import com.tractorstore.model.catalog.CatalogStoreEntity;
+import com.tractorstore.repository.CatalogCategoryRepository;
+import com.tractorstore.repository.CatalogProductRepository;
+import com.tractorstore.repository.CatalogStoreRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@Transactional(readOnly = true)
+public class CatalogService {
+
+    private static final int MAX_RECOMMENDATIONS = 6;
+    private static final int FEATURED_COUNT = 4;
+
+    private final CatalogProductRepository productRepository;
+    private final CatalogCategoryRepository categoryRepository;
+    private final CatalogStoreRepository storeRepository;
+
+    public CatalogService(CatalogProductRepository productRepository,
+                          CatalogCategoryRepository categoryRepository,
+<span class="nc" id="L35">                          CatalogStoreRepository storeRepository) {</span>
+<span class="nc" id="L36">        this.productRepository = productRepository;</span>
+<span class="nc" id="L37">        this.categoryRepository = categoryRepository;</span>
+<span class="nc" id="L38">        this.storeRepository = storeRepository;</span>
+<span class="nc" id="L39">    }</span>
+
+    public HomeData getHome() {
+<span class="nc" id="L42">        List&lt;Product&gt; products = toProductDtos(productRepository.findAll());</span>
+<span class="nc" id="L43">        List&lt;Category&gt; categories = toCategoryDtos(categoryRepository.findAll());</span>
+<span class="nc" id="L44">        List&lt;Product&gt; featured = products.subList(0, Math.min(FEATURED_COUNT, products.size()));</span>
+<span class="nc" id="L45">        return new HomeData(</span>
+            &quot;Bienvenido a The Tractor Store&quot;,
+            &quot;Encuentra el tractor perfecto para tu campo&quot;,
+            categories,
+            featured
+        );
+    }
+
+    public List&lt;Product&gt; getProductsByFilter(String filter) {
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (&quot;all&quot;.equalsIgnoreCase(filter)) {</span>
+<span class="nc" id="L55">            return toProductDtos(productRepository.findAll());</span>
+        }
+<span class="nc" id="L57">        return toProductDtos(productRepository.findByCategory(filter));</span>
+    }
+
+    public List&lt;Store&gt; getStores() {
+<span class="nc" id="L61">        return toStoreDtos(storeRepository.findAll());</span>
+    }
+
+    /**
+     * Returns up to {@value #MAX_RECOMMENDATIONS} products whose colors are closest
+     * (Euclidean RGB distance) to the colors of the requested SKUs.
+     */
+    public List&lt;Product&gt; getRecommendations(String skusCsv) {
+<span class="nc" id="L69">        Set&lt;String&gt; requestedSkus = Arrays.stream(skusCsv.split(&quot;,&quot;))</span>
+<span class="nc" id="L70">            .map(String::trim)</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            .filter(s -&gt; !s.isEmpty())</span>
+<span class="nc" id="L72">            .map(String::toUpperCase)</span>
+<span class="nc" id="L73">            .collect(Collectors.toUnmodifiableSet());</span>
+
+<span class="nc" id="L75">        List&lt;Product&gt; allProducts = toProductDtos(productRepository.findAll());</span>
+
+<span class="nc" id="L77">        Map&lt;String, Product&gt; skuIndex = allProducts.stream()</span>
+<span class="nc" id="L78">            .collect(Collectors.toMap(p -&gt; p.sku().toUpperCase(), p -&gt; p));</span>
+
+<span class="nc" id="L80">        List&lt;String&gt; referenceColors = requestedSkus.stream()</span>
+<span class="nc" id="L81">            .filter(skuIndex::containsKey)</span>
+<span class="nc" id="L82">            .map(sku -&gt; skuIndex.get(sku).color())</span>
+<span class="nc" id="L83">            .toList();</span>
+
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (referenceColors.isEmpty()) {</span>
+<span class="nc" id="L86">            return List.of();</span>
+        }
+
+<span class="nc" id="L89">        return allProducts.stream()</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">            .filter(p -&gt; !requestedSkus.contains(p.sku().toUpperCase()))</span>
+<span class="nc" id="L91">            .sorted(java.util.Comparator.comparingDouble(</span>
+<span class="nc" id="L92">                p -&gt; ColorDistanceService.minDistanceToAny(p.color(), referenceColors)</span>
+            ))
+<span class="nc" id="L94">            .limit(MAX_RECOMMENDATIONS)</span>
+<span class="nc" id="L95">            .toList();</span>
+    }
+
+    // ── Entity → DTO mappers ───────────────────────────────────────────────
+
+    private static Product toProductDto(CatalogProductEntity e) {
+<span class="nc" id="L101">        return new Product(</span>
+<span class="nc" id="L102">            e.getId().toString(),</span>
+<span class="nc" id="L103">            e.getSku(),</span>
+<span class="nc" id="L104">            e.getName(),</span>
+<span class="nc" id="L105">            e.getPrice().doubleValue(),</span>
+<span class="nc" id="L106">            e.getImageUrl(),</span>
+<span class="nc" id="L107">            e.getCategory(),</span>
+<span class="nc" id="L108">            e.getColor(),</span>
+<span class="nc" id="L109">            e.getMotor()</span>
+        );
+    }
+
+    private static Category toCategoryDto(CatalogCategoryEntity e) {
+<span class="nc" id="L114">        return new Category(</span>
+<span class="nc" id="L115">            e.getId().toString(),</span>
+<span class="nc" id="L116">            e.getName(),</span>
+<span class="nc" id="L117">            e.getFilter(),</span>
+<span class="nc" id="L118">            e.getImageUrl(),</span>
+<span class="nc" id="L119">            e.getDescription()</span>
+        );
+    }
+
+    private static Store toStoreDto(CatalogStoreEntity e) {
+<span class="nc" id="L124">        return new Store(</span>
+<span class="nc" id="L125">            e.getId().toString(),</span>
+<span class="nc" id="L126">            e.getName(),</span>
+<span class="nc" id="L127">            e.getAddress(),</span>
+<span class="nc" id="L128">            e.getCity(),</span>
+<span class="nc" id="L129">            e.getPhone(),</span>
+<span class="nc" id="L130">            e.getEmail(),</span>
+<span class="nc" id="L131">            e.getLatitude(),</span>
+<span class="nc" id="L132">            e.getLongitude(),</span>
+<span class="nc" id="L133">            e.getOpeningHours()</span>
+        );
+    }
+
+    private static List&lt;Product&gt; toProductDtos(List&lt;CatalogProductEntity&gt; entities) {
+<span class="nc" id="L138">        return entities.stream().map(CatalogService::toProductDto).toList();</span>
+    }
+
+    private static List&lt;Category&gt; toCategoryDtos(List&lt;CatalogCategoryEntity&gt; entities) {
+<span class="nc" id="L142">        return entities.stream().map(CatalogService::toCategoryDto).toList();</span>
+    }
+
+    private static List&lt;Store&gt; toStoreDtos(List&lt;CatalogStoreEntity&gt; entities) {
+<span class="nc" id="L146">        return entities.stream().map(CatalogService::toStoreDto).toList();</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

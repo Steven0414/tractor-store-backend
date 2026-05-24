@@ -8,7 +8,7 @@ decision, its context, and its consequences.
 | ADR | Title | Status |
 |---|---|---|
 | [0001](0001-single-spring-boot-service.md) | Single Spring Boot Service | Accepted |
-| [0002](0002-h2-in-memory-database.md) | H2 In-Memory Database | Accepted |
+| [0003](0003-postgresql-migration.md) | PostgreSQL with Flyway | Accepted |
 
 ## Format
 

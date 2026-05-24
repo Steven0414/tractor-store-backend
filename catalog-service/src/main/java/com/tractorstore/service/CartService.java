@@ -4,65 +4,70 @@ import com.tractorstore.model.AddCartItemRequest;
 import com.tractorstore.model.Cart;
 import com.tractorstore.model.CartItem;
 import com.tractorstore.model.MiniCart;
+import com.tractorstore.model.cart.CartItemEntity;
+import com.tractorstore.repository.CartItemRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @Service
+@Transactional
 public class CartService {
 
-    private static final String CART_SESSION_KEY = "cart_items";
+    private final CartItemRepository cartItemRepository;
 
-    private final CartSessionRegistry registry;
-
-    public CartService(CartSessionRegistry registry) {
-        this.registry = registry;
+    public CartService(CartItemRepository cartItemRepository) {
+        this.cartItemRepository = cartItemRepository;
     }
 
+    @Transactional(readOnly = true)
     public Cart getCart(HttpSession session) {
-        return new Cart(getItemList(session));
+        List<CartItem> items = cartItemRepository
+            .findBySessionId(session.getId())
+            .stream()
+            .map(CartService::toDto)
+            .toList();
+        return new Cart(items);
     }
 
+    @Transactional(readOnly = true)
     public MiniCart getMiniCart(HttpSession session) {
         Cart cart = getCart(session);
         return new MiniCart(cart.getItemCount(), cart.getTotal());
     }
 
     public Cart addItem(HttpSession session, AddCartItemRequest request) {
-        Map<String, CartItem> cartMap = getCartMap(session);
-
-        if (cartMap.containsKey(request.getSku())) {
-            CartItem existing = cartMap.get(request.getSku());
-            existing.setQuantity(existing.getQuantity() + Math.max(1, request.getQuantity()));
-        } else {
-            CartItem item = new CartItem(
-                    request.getSku(),
-                    request.getName(),
-                    Math.max(1, request.getQuantity()),
-                    request.getPrice()
+        String sessionId = session.getId();
+        cartItemRepository.findBySessionIdAndSku(sessionId, request.getSku())
+            .ifPresentOrElse(
+                existing -> {
+                    existing.setQuantity(existing.getQuantity() + Math.max(1, request.getQuantity()));
+                    cartItemRepository.save(existing);
+                },
+                () -> {
+                    CartItemEntity entity = new CartItemEntity(
+                        sessionId,
+                        request.getSku(),
+                        request.getName(),
+                        Math.max(1, request.getQuantity()),
+                        BigDecimal.valueOf(request.getPrice())
+                    );
+                    cartItemRepository.save(entity);
+                }
             );
-            cartMap.put(request.getSku(), item);
-        }
-
-        session.setAttribute(CART_SESSION_KEY, cartMap);
-        registry.put(session.getId(), cartMap);
-        return new Cart(new ArrayList<>(cartMap.values()));
+        return getCart(session);
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, CartItem> getCartMap(HttpSession session) {
-        Object raw = session.getAttribute(CART_SESSION_KEY);
-        if (raw instanceof Map<?, ?> map) {
-            return (Map<String, CartItem>) map;
-        }
-        return new LinkedHashMap<>();
-    }
-
-    private List<CartItem> getItemList(HttpSession session) {
-        return new ArrayList<>(getCartMap(session).values());
+    private static CartItem toDto(CartItemEntity entity) {
+        return new CartItem(
+            entity.getSku(),
+            entity.getName(),
+            entity.getQuantity(),
+            entity.getPrice().doubleValue()
+        );
     }
 }
+

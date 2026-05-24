@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OrderEntity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">catalog-service</a> &gt; <a href="index.source.html" class="el_package">com.tractorstore.model.order</a> &gt; <span class="el_source">OrderEntity.java</span></div><h1>OrderEntity.java</h1><pre class="source lang-java linenums">package com.tractorstore.model.order;
+
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.UUID;
+
+@Entity
+@Table(
+    name = &quot;order_orders&quot;,
+    indexes = @Index(name = &quot;idx_order_orders_created_at&quot;, columnList = &quot;created_at&quot;)
+)
+public class OrderEntity {
+
+    @Id
+    private UUID id;
+
+    @Column(name = &quot;first_name&quot;, nullable = false)
+    private String firstName;
+
+    @Column(name = &quot;last_name&quot;, nullable = false)
+    private String lastName;
+
+    @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false, length = 30)
+    private String phone;
+
+    @Column(nullable = false)
+    private String address;
+
+    @Column(nullable = false, length = 100)
+    private String city;
+
+    @Column(name = &quot;postal_code&quot;, nullable = false, length = 20)
+    private String postalCode;
+
+    @Column(name = &quot;payment_method&quot;, nullable = false, length = 50)
+    private String paymentMethod;
+
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal total;
+
+    @Column(nullable = false, length = 30)
+    private String status;
+
+    @Column(name = &quot;created_at&quot;, nullable = false)
+    private Instant createdAt;
+
+<span class="nc" id="L51">    public OrderEntity() {}</span>
+
+    public OrderEntity(UUID id, String firstName, String lastName, String email, String phone,
+                       String address, String city, String postalCode, String paymentMethod,
+<span class="nc" id="L55">                       BigDecimal total, String status) {</span>
+<span class="nc" id="L56">        this.id = id;</span>
+<span class="nc" id="L57">        this.firstName = firstName;</span>
+<span class="nc" id="L58">        this.lastName = lastName;</span>
+<span class="nc" id="L59">        this.email = email;</span>
+<span class="nc" id="L60">        this.phone = phone;</span>
+<span class="nc" id="L61">        this.address = address;</span>
+<span class="nc" id="L62">        this.city = city;</span>
+<span class="nc" id="L63">        this.postalCode = postalCode;</span>
+<span class="nc" id="L64">        this.paymentMethod = paymentMethod;</span>
+<span class="nc" id="L65">        this.total = total;</span>
+<span class="nc" id="L66">        this.status = status;</span>
+<span class="nc" id="L67">        this.createdAt = Instant.now();</span>
+<span class="nc" id="L68">    }</span>
+
+<span class="nc" id="L70">    public UUID getId() { return id; }</span>
+<span class="nc" id="L71">    public String getFirstName() { return firstName; }</span>
+<span class="nc" id="L72">    public String getLastName() { return lastName; }</span>
+<span class="nc" id="L73">    public String getEmail() { return email; }</span>
+<span class="nc" id="L74">    public String getPhone() { return phone; }</span>
+<span class="nc" id="L75">    public String getAddress() { return address; }</span>
+<span class="nc" id="L76">    public String getCity() { return city; }</span>
+<span class="nc" id="L77">    public String getPostalCode() { return postalCode; }</span>
+<span class="nc" id="L78">    public String getPaymentMethod() { return paymentMethod; }</span>
+<span class="nc" id="L79">    public BigDecimal getTotal() { return total; }</span>
+<span class="nc" id="L80">    public String getStatus() { return status; }</span>
+<span class="nc" id="L81">    public Instant getCreatedAt() { return createdAt; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

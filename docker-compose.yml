@@ -1,0 +1,35 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tractordb
+      POSTGRES_USER: ${POSTGRES_USER:-tractoruser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tractorpass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tractoruser} -d tractordb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  catalog-service:
+    build:
+      context: ./catalog-service
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tractordb
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-tractoruser}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-tractorpass}
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
