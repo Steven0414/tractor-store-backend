@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - 'catalog-service/Dockerfile'
+      - 'tractor-store/Dockerfile'
+      - 'tractor-store/pom.xml'
+      - 'tractor-store/src/**'
       - '.github/workflows/infrastructure.yml'
   workflow_dispatch:
     inputs:
@@ -17,8 +19,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/tractor-store-catalog-service
-  JAVA_VERSION: '17'
+  IMAGE_NAME: tractor-store-backend
+  JAVA_VERSION: '21'
 
 jobs:
   # ─── 1. Validate Dockerfile ──────────────────────────────────────────────────
@@ -28,10 +30,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Lint catalog-service Dockerfile
+      - name: Lint tractor-store Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: catalog-service/Dockerfile
+          dockerfile: tractor-store/Dockerfile
 
   # ─── 2. Build JAR & Docker Image ─────────────────────────────────────────────
   build-push:
@@ -54,15 +56,21 @@ jobs:
 
       - name: Extract project version from pom.xml
         id: version
-        working-directory: catalog-service
+        working-directory: tractor-store
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Project version: ${VERSION}"
 
       - name: Build JAR (tests covered in build-deploy pipeline)
-        working-directory: catalog-service
+        working-directory: tractor-store
         run: mvn package -DskipTests --no-transfer-progress
+
+      - name: Compute image name (lowercase)
+        id: image
+        run: |
+          OWNER_LC="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
+          echo "name=${OWNER_LC}/${{ env.IMAGE_NAME }}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -78,18 +86,18 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
           tags: |
             type=ref,event=branch
             type=sha,prefix=sha-
             type=raw,value=${{ steps.version.outputs.version }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      - name: Build & push catalog-service image
+      - name: Build & push tractor-store image
         uses: docker/build-push-action@v5
         with:
-          context: ./catalog-service
-          file: ./catalog-service/Dockerfile
+          context: ./tractor-store
+          file: ./tractor-store/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -98,7 +106,7 @@ jobs:
 
   # ─── 3. Smoke Test Container ─────────────────────────────────────────────────
   smoke-test:
-    name: Smoke Test – catalog-service
+    name: Smoke Test – tractor-store
     runs-on: ubuntu-latest
     needs: build-push
     if: github.ref == 'refs/heads/main'
@@ -113,29 +121,53 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull & run catalog-service
+      - name: Compute image name (lowercase)
+        id: image
+        run: |
+          OWNER_LC="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
+          echo "name=${OWNER_LC}/${{ env.IMAGE_NAME }}" >> "$GITHUB_OUTPUT"
+
+      - name: Start PostgreSQL for smoke test
+        run: |
+          docker network create smoke-net
+          docker run -d \
+            --name smoke-postgres \
+            --network smoke-net \
+            -e POSTGRES_DB=tractordb \
+            -e POSTGRES_USER=tractoruser \
+            -e POSTGRES_PASSWORD=tractorpass \
+            postgres:16-alpine
+
+      - name: Pull & run tractor-store
         run: |
           docker run -d \
-            --name catalog-smoke \
+            --name tractor-store-smoke \
+            --network smoke-net \
             -p 8080:8080 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            -e DB_URL=jdbc:postgresql://smoke-postgres:5432/tractordb \
+            -e DB_USER=tractoruser \
+            -e DB_PASSWORD=tractorpass \
+            ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:latest
 
       - name: Wait for Spring Boot to be ready
         run: |
           for i in {1..20}; do
-            if curl --silent --fail http://localhost:8080/api/products; then
-              echo "✅ catalog-service is up"
+            if curl --silent --fail http://localhost:8080/api/catalog/home; then
+              echo "✅ tractor-store is up"
               exit 0
             fi
             echo "Waiting... ($i/20)"
             sleep 5
           done
-          echo "❌ catalog-service did not respond in time"
-          docker logs catalog-smoke
+          echo "❌ tractor-store did not respond in time"
+          docker logs tractor-store-smoke
           exit 1
 
       - name: Teardown
         if: always()
         run: |
-          docker stop catalog-smoke || true
-          docker rm   catalog-smoke || true
+          docker stop tractor-store-smoke || true
+          docker rm   tractor-store-smoke || true
+          docker stop smoke-postgres || true
+          docker rm   smoke-postgres || true
+          docker network rm smoke-net || true

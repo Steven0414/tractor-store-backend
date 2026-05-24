@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Cart.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tractor-store</a> &gt; <a href="index.source.html" class="el_package">com.tractorstore.cart.domain</a> &gt; <span class="el_source">Cart.java</span></div><h1>Cart.java</h1><pre class="source lang-java linenums">package com.tractorstore.cart.domain;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+@Entity
+@Table(name = &quot;cart_carts&quot;)
+public class Cart {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(nullable = false, unique = true)
+  private String sessionId;
+
+<span class="nc" id="L27">  @OneToMany(mappedBy = &quot;cart&quot;, cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)</span>
+  private List&lt;CartItem&gt; items = new ArrayList&lt;&gt;();
+
+<span class="nc" id="L30">  protected Cart() {</span>
+<span class="nc" id="L31">  }</span>
+
+<span class="nc" id="L33">  public Cart(String sessionId) {</span>
+<span class="nc" id="L34">    this.sessionId = sessionId;</span>
+<span class="nc" id="L35">  }</span>
+
+  public String getSessionId() {
+<span class="nc" id="L38">    return sessionId;</span>
+  }
+
+  public List&lt;CartItem&gt; getItems() {
+<span class="nc" id="L42">    return items;</span>
+  }
+
+  public void addOrReplaceItem(String sku, int quantity, java.math.BigDecimal unitPrice) {
+<span class="nc" id="L46">    removeItem(sku);</span>
+<span class="nc" id="L47">    items.add(new CartItem(this, sku, quantity, unitPrice));</span>
+<span class="nc" id="L48">  }</span>
+
+  public void removeItem(String sku) {
+<span class="nc" id="L51">    Iterator&lt;CartItem&gt; iterator = items.iterator();</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    while (iterator.hasNext()) {</span>
+<span class="nc" id="L53">      CartItem item = iterator.next();</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">      if (item.getSku().equalsIgnoreCase(sku)) {</span>
+<span class="nc" id="L55">        iterator.remove();</span>
+      }
+<span class="nc" id="L57">    }</span>
+<span class="nc" id="L58">  }</span>
+
+  public void clear() {
+<span class="nc" id="L61">    items.clear();</span>
+<span class="nc" id="L62">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

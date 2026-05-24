@@ -1,5 +1,0 @@
-com/tractorstore/notifications/model/OrderPlacedPayload.class
-com/tractorstore/notifications/NotificationsServiceApplication.class
-com/tractorstore/notifications/service/NotificationService.class
-com/tractorstore/notifications/model/OrderItemPayload.class
-com/tractorstore/notifications/controller/EventController.class

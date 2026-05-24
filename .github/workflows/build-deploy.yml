@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: tractor-store-catalog-service
+  IMAGE_NAME: tractor-store-backend
   JAVA_VERSION: '21'
 
 jobs:
@@ -28,15 +28,15 @@ jobs:
           cache: maven
 
       - name: Compile source (strict – no tests)
-        working-directory: catalog-service
+        working-directory: tractor-store
         run: mvn compile --no-transfer-progress
 
       - name: Check code style with Checkstyle
-        working-directory: catalog-service
+        working-directory: tractor-store
         run: mvn checkstyle:check --no-transfer-progress || echo "⚠️ Checkstyle plugin not configured – skipping"
 
       - name: Dependency vulnerability scan
-        working-directory: catalog-service
+        working-directory: tractor-store
         run: |
           mvn dependency:analyze --no-transfer-progress 2>&1 | \
             grep -E "(WARNING|ERROR|unused declared|undeclared)" || true
@@ -58,11 +58,11 @@ jobs:
           cache: maven
 
       - name: Run tests with JaCoCo coverage
-        working-directory: catalog-service
+        working-directory: tractor-store
         run: mvn test jacoco:report --no-transfer-progress
 
       - name: Enforce coverage thresholds (70% lines & branches)
-        working-directory: catalog-service
+        working-directory: tractor-store
         run: |
           REPORT="target/site/jacoco/jacoco.xml"
           if [ ! -f "$REPORT" ]; then
@@ -109,7 +109,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
-          path: catalog-service/target/site/jacoco/
+          path: tractor-store/target/site/jacoco/
           retention-days: 7
 
       - name: Upload Surefire test results
@@ -117,7 +117,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
-          path: catalog-service/target/surefire-reports/
+          path: tractor-store/target/surefire-reports/
           retention-days: 7
 
   # ─── 3. Package – Build production JAR ──────────────────────────────────────
@@ -137,14 +137,14 @@ jobs:
           cache: maven
 
       - name: Build production JAR
-        working-directory: catalog-service
+        working-directory: tractor-store
         run: mvn package -DskipTests --no-transfer-progress
 
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: catalog-service-jar
-          path: catalog-service/target/*.jar
+          name: tractor-store-jar
+          path: tractor-store/target/*.jar
           retention-days: 1
 
   # ─── 4. Build & Push Docker Image ────────────────────────────────────────────
@@ -169,8 +169,8 @@ jobs:
       - name: Download JAR artifact
         uses: actions/download-artifact@v4
         with:
-          name: catalog-service-jar
-          path: catalog-service/target/
+          name: tractor-store-jar
+          path: tractor-store/target/
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -192,11 +192,11 @@ jobs:
             type=sha,prefix=sha-
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      - name: Build & push catalog-service
+      - name: Build & push tractor-store backend
         uses: docker/build-push-action@v5
         with:
-          context: ./catalog-service
-          file: ./catalog-service/Dockerfile
+          context: ./tractor-store
+          file: ./tractor-store/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

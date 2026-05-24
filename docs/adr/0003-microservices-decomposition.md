@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by ADR-0004
 
 ## Context
 
@@ -22,7 +22,7 @@ this simplified early development, several DDD-aligned concerns emerged:
 
 ## Decision
 
-Extract each bounded context into its own **Spring Boot 3 / Java 17**
+Extract each bounded context into its own **Spring Boot 3 / Java 21**
 microservice. All services share a single PostgreSQL database (`tractordb`)
 but own their tables exclusively (module-prefixed: `catalog_*`, `inventory_*`,
 `cart_*`, `order_*`).

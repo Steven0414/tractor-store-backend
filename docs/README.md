@@ -11,39 +11,33 @@ reviewed through pull requests.
 |---|---|
 | [Architecture](architecture.md) | Backend architecture and component overview |
 | [API Reference](api-reference.md) | REST API endpoints for all controllers |
-| [Catalog Service](catalog-service.md) | Internal service design and data model |
 | [Database](database.md) | PostgreSQL schema, tables, indexes and migrations |
 | [Development Guide](development.md) | Local setup and development workflow |
 | [Deployment Guide](deployment.md) | Maven build and Docker deployment |
 | [ADR Index](adr/README.md) | Architecture Decision Records |
-| [ADR-0003](adr/0003-microservices-decomposition.md) | Decomposition into Microservices |
+| [ADR-0004](adr/0004-modular-monolith-recomposition.md) | Recomposition to Modular Monolith |
 
 ## Project Overview
 
-The Tractor Store backend is composed of **5 independent Spring Boot 3**
-microservices, each exposing its own REST API and running on a dedicated port.
-All services share a single PostgreSQL database (`tractordb`); schema ownership
-and Flyway migrations belong exclusively to `catalog-service`.
+The Tractor Store backend is a **single Spring Boot modular monolith** with DDD
+boundaries for `catalog`, `inventory`, `cart`, `order`, and `notifications`.
+It exposes a unified API at port `8080` and persists data in PostgreSQL
+(`tractordb`) using Flyway-managed migrations.
 
 ```
 tractor-store-backend/
-├── docker-compose.yml            # PostgreSQL + all 5 services
+├── docker-compose.yml            # PostgreSQL + monolith runtime
 ├── .env.example                  # Template for DB credentials
-├── catalog-service/              # :8080 — Catalog, categories, stores, recommendations
-├── inventory-service/            # :8081 — Stock levels per SKU
-├── cart-service/                 # :8082 — Session cart management
-├── order-service/                # :8083 — Order placement and confirmation
-└── notifications-service/        # :8084 — Email simulation (event demo, no DB)
-    Each service:
-    ├── src/main/java/com/tractorstore/<module>/
-    │   ├── controller/           # REST controllers
-    │   ├── service/              # Business logic
-    │   ├── model/                # Domain models & JPA entities
-    │   ├── repository/           # JPA repositories (not in notifications-service)
-    │   ├── event/                # Domain events (order-service only)
-    │   └── config/               # CORS and beans config
+└── tractor-store/                # :8080 — Modular monolith
     ├── pom.xml
-    └── Dockerfile
+    ├── Dockerfile
+    └── src/main/java/com/tractorstore/
+        ├── catalog/
+        ├── inventory/
+        ├── cart/
+        ├── order/
+        ├── notifications/
+        └── shared/events/
 ```
 
 ## Contributing to Docs

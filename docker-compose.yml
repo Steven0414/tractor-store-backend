@@ -17,69 +17,19 @@ services:
       retries: 5
       start_period: 10s
 
-  catalog-service:
+  tractor-store:
     build:
-      context: ./catalog-service
+      context: ./tractor-store
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tractordb
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-tractoruser}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-tractorpass}
-      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://postgres:5432/tractordb
+      DB_USER: ${POSTGRES_USER:-tractoruser}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-tractorpass}
+      PORT: 8080
     depends_on:
       postgres:
         condition: service_healthy
-
-  inventory-service:
-    build:
-      context: ./inventory-service
-    ports:
-      - "8081:8081"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tractordb
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-tractoruser}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-tractorpass}
-      SPRING_PROFILES_ACTIVE: dev
-    depends_on:
-      catalog-service:
-        condition: service_started
-
-  cart-service:
-    build:
-      context: ./cart-service
-    ports:
-      - "8082:8082"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tractordb
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-tractoruser}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-tractorpass}
-      SPRING_PROFILES_ACTIVE: dev
-    depends_on:
-      catalog-service:
-        condition: service_started
-
-  order-service:
-    build:
-      context: ./order-service
-    ports:
-      - "8083:8083"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tractordb
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-tractoruser}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-tractorpass}
-      SPRING_PROFILES_ACTIVE: dev
-    depends_on:
-      catalog-service:
-        condition: service_started
-
-  notifications-service:
-    build:
-      context: ./notifications-service
-    ports:
-      - "8084:8084"
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
 
 volumes:
   postgres_data:

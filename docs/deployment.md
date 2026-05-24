@@ -4,28 +4,26 @@
 
 | Tool | Notes |
 |---|---|
-| PostgreSQL 16+ | Must exist before first deploy; Flyway handles schema |
-| Docker 24+ | For containerised deployment |
+| Java 21 | For local Maven packaging |
+| PostgreSQL 16+ | Required by the backend runtime |
+| Docker 24+ | For containerized deployment |
 
 ## Building
 
-### Maven (all services)
+### Maven (monolith)
 
 ```bash
-for svc in catalog-service inventory-service cart-service order-service notifications-service; do
-  (cd $svc && ./mvnw clean package -DskipTests)
-done
+cd tractor-store
+./mvnw clean package -DskipTests --no-transfer-progress
 ```
 
-### Docker (all services)
+### Docker (single image)
 
 ```bash
-for svc in catalog-service inventory-service cart-service order-service notifications-service; do
-  docker build -t tractor-store/$svc:latest ./$svc
-done
+docker build -t tractor-store/backend:latest ./tractor-store
 ```
 
-## Docker Compose (recommended for local development)
+## Docker Compose
 
 ```bash
 cd tractor-store-backend
@@ -33,80 +31,57 @@ cp .env.example .env   # set credentials if needed
 docker compose up
 ```
 
-## Running Individual Containers
+This boots `postgres` and `tractor-store`.
+
+## Running Container Manually
 
 ```bash
-# catalog-service (must run first — owns Flyway migrations)
 docker run -p 8080:8080 \
-  -e SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:5432/tractordb \
-  -e SPRING_DATASOURCE_USERNAME=tractoruser \
-  -e SPRING_DATASOURCE_PASSWORD=<password> \
-  tractor-store/catalog-service:latest
-
-# inventory-service
-docker run -p 8081:8081 \
-  -e SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:5432/tractordb \
-  -e SPRING_DATASOURCE_USERNAME=tractoruser \
-  -e SPRING_DATASOURCE_PASSWORD=<password> \
-  tractor-store/inventory-service:latest
-
-# Similar for cart-service (:8082) and order-service (:8083)
-
-# notifications-service (no DB)
-docker run -p 8084:8084 tractor-store/notifications-service:latest
+  -e DB_URL=jdbc:postgresql://<host>:5432/tractordb \
+  -e DB_USER=tractoruser \
+  -e DB_PASSWORD=<password> \
+  -e PORT=8080 \
+  tractor-store/backend:latest
 ```
 
 ## Dockerfile Overview
 
-All services follow the same pattern:
+The backend uses a multi-stage Dockerfile in `tractor-store/Dockerfile`:
 
 ```dockerfile
-FROM eclipse-temurin:17-jre-alpine
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 WORKDIR /app
-COPY target/<service>-*.jar app.jar
+COPY pom.xml .
+COPY src ./src
+RUN mvn package -DskipTests --no-transfer-progress
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
 ## Schema Management
 
-Flyway runs automatically on `catalog-service` startup:
+Flyway runs automatically on `tractor-store` startup:
 
 ```
-catalog-service/src/main/resources/db/migration/
-  V1__initial_schema.sql       ← All module tables (catalog_*, inventory_*, cart_*, order_*)
-  V2__seed_catalog_data.sql    ← Products, categories, stores
-  V3__seed_inventory_stock.sql ← Initial inventory (10 units/SKU)
+tractor-store/src/main/resources/db/migration/
+  V1__init_modular_monolith.sql
 ```
-
-> Always start `catalog-service` before other services in production.
 
 ## Environment Variables
 
 | Variable | Default | Used by |
 |---|---|---|
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/tractordb` | All DB services |
-| `SPRING_DATASOURCE_USERNAME` | `tractoruser` | All DB services |
-| `SPRING_DATASOURCE_PASSWORD` | `tractorpass` | All DB services |
-| `SPRING_PROFILES_ACTIVE` | *(none)* | Set to `dev` for SQL logging |
-| `ORDER_EVENTS_ORDER-PLACED_SUBSCRIBERS` | *(see app.properties)* | order-service only |
-
-## Event Subscriber Configuration (order-service)
-
-```properties
-# application.properties — Docker/production URLs
-order.events.order-placed.subscribers=\
-  http://inventory-service:8081/internal/events/order-placed,\
-  http://cart-service:8082/internal/events/order-placed,\
-  http://notifications-service:8084/internal/events/order-placed
-```
+| `DB_URL` | `jdbc:postgresql://localhost:5432/tractordb` | `tractor-store` |
+| `DB_USER` | `postgres` | `tractor-store` |
+| `DB_PASSWORD` | `postgres` | `tractor-store` |
+| `PORT` | `8080` | `tractor-store` |
 
 ## Port Summary
 
-| Service | Default port |
+| Component | Default port |
 |---|---|
-| catalog-service | 8080 |
-| inventory-service | 8081 |
-| cart-service | 8082 |
-| order-service | 8083 |
-| notifications-service | 8084 |
+| tractor-store | 8080 |
 | PostgreSQL | 5432 (host: 54320) |

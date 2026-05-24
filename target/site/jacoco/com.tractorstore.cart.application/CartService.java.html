@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CartService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tractor-store</a> &gt; <a href="index.source.html" class="el_package">com.tractorstore.cart.application</a> &gt; <span class="el_source">CartService.java</span></div><h1>CartService.java</h1><pre class="source lang-java linenums">package com.tractorstore.cart.application;
+
+import com.tractorstore.cart.domain.Cart;
+import com.tractorstore.cart.domain.CartItem;
+import com.tractorstore.cart.infrastructure.CartRepository;
+import com.tractorstore.shared.events.CheckoutRequestedEvent;
+import com.tractorstore.shared.events.OrderLinePayload;
+import com.tractorstore.shared.events.OrderPlacedEvent;
+import java.math.BigDecimal;
+import java.util.List;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+@Service
+public class CartService implements CartQueryFacade {
+
+  private final CartRepository cartRepository;
+  private final ApplicationEventPublisher eventPublisher;
+
+<span class="nc" id="L22">  public CartService(CartRepository cartRepository, ApplicationEventPublisher eventPublisher) {</span>
+<span class="nc" id="L23">    this.cartRepository = cartRepository;</span>
+<span class="nc" id="L24">    this.eventPublisher = eventPublisher;</span>
+<span class="nc" id="L25">  }</span>
+
+  @Transactional
+  public CartView getCart(String sessionId) {
+<span class="nc" id="L29">    Cart cart = getOrCreate(sessionId);</span>
+<span class="nc" id="L30">    return toView(cart);</span>
+  }
+
+  @Transactional
+  public CartSummaryView getMiniCart(String sessionId) {
+<span class="nc" id="L35">    Cart cart = getOrCreate(sessionId);</span>
+<span class="nc" id="L36">    int quantity = cart.getItems().stream().mapToInt(CartItem::getQuantity).sum();</span>
+<span class="nc" id="L37">    return new CartSummaryView(sessionId, quantity);</span>
+  }
+
+  @Transactional
+  public CartView addItem(String sessionId, String sku, int quantity, BigDecimal unitPrice) {
+<span class="nc" id="L42">    Cart cart = getOrCreate(sessionId);</span>
+<span class="nc" id="L43">    cart.addOrReplaceItem(sku, quantity, unitPrice);</span>
+<span class="nc" id="L44">    return toView(cart);</span>
+  }
+
+  @Transactional
+  public CartView removeItem(String sessionId, String sku) {
+<span class="nc" id="L49">    Cart cart = getOrCreate(sessionId);</span>
+<span class="nc" id="L50">    cart.removeItem(sku);</span>
+<span class="nc" id="L51">    return toView(cart);</span>
+  }
+
+  @Transactional
+  public void requestCheckout(String sessionId, String pickupStoreCode, String buyerName, String buyerEmail) {
+<span class="nc" id="L56">    getOrCreate(sessionId);</span>
+<span class="nc" id="L57">    eventPublisher.publishEvent(new CheckoutRequestedEvent(sessionId, pickupStoreCode, buyerName, buyerEmail));</span>
+<span class="nc" id="L58">  }</span>
+
+  @Override
+  @Transactional(readOnly = true)
+  public List&lt;OrderLinePayload&gt; getOrderLines(String sessionId) {
+<span class="nc" id="L63">    Cart cart = getOrCreate(sessionId);</span>
+<span class="nc" id="L64">    return cart.getItems().stream()</span>
+<span class="nc" id="L65">        .map(item -&gt; new OrderLinePayload(item.getSku(), item.getQuantity()))</span>
+<span class="nc" id="L66">        .toList();</span>
+  }
+
+  @Override
+  @Transactional
+  public void clearCart(String sessionId) {
+<span class="nc" id="L72">    cartRepository.findBySessionId(sessionId).ifPresent(Cart::clear);</span>
+<span class="nc" id="L73">  }</span>
+
+  @Transactional
+  @TransactionalEventListener
+  public void onOrderPlaced(OrderPlacedEvent event) {
+<span class="nc" id="L78">    clearCart(event.sessionId());</span>
+<span class="nc" id="L79">  }</span>
+
+  private Cart getOrCreate(String sessionId) {
+<span class="nc" id="L82">    return cartRepository.findBySessionId(sessionId)</span>
+<span class="nc" id="L83">        .orElseGet(() -&gt; cartRepository.save(new Cart(sessionId)));</span>
+  }
+
+  private CartView toView(Cart cart) {
+<span class="nc" id="L87">    List&lt;CartView.Item&gt; items = cart.getItems().stream()</span>
+<span class="nc" id="L88">        .map(item -&gt; new CartView.Item(</span>
+<span class="nc" id="L89">            item.getSku(),</span>
+<span class="nc" id="L90">            item.getQuantity(),</span>
+<span class="nc" id="L91">            item.getUnitPrice(),</span>
+<span class="nc" id="L92">            item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()))</span>
+        ))
+<span class="nc" id="L94">        .toList();</span>
+
+<span class="nc" id="L96">    BigDecimal total = items.stream()</span>
+<span class="nc" id="L97">        .map(CartView.Item::subtotal)</span>
+<span class="nc" id="L98">        .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+
+<span class="nc" id="L100">    return new CartView(cart.getSessionId(), items, total);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

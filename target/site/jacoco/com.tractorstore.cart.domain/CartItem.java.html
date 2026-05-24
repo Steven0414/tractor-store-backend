@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CartItem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">tractor-store</a> &gt; <a href="index.source.html" class="el_package">com.tractorstore.cart.domain</a> &gt; <span class="el_source">CartItem.java</span></div><h1>CartItem.java</h1><pre class="source lang-java linenums">package com.tractorstore.cart.domain;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = &quot;cart_items&quot;)
+public class CartItem {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = &quot;cart_id&quot;, nullable = false)
+  private Cart cart;
+
+  @Column(nullable = false)
+  private String sku;
+
+  @Column(nullable = false)
+  private int quantity;
+
+  @Column(nullable = false)
+  private BigDecimal unitPrice;
+
+<span class="nc" id="L35">  protected CartItem() {</span>
+<span class="nc" id="L36">  }</span>
+
+<span class="nc" id="L38">  public CartItem(Cart cart, String sku, int quantity, BigDecimal unitPrice) {</span>
+<span class="nc" id="L39">    this.cart = cart;</span>
+<span class="nc" id="L40">    this.sku = sku;</span>
+<span class="nc" id="L41">    this.quantity = quantity;</span>
+<span class="nc" id="L42">    this.unitPrice = unitPrice;</span>
+<span class="nc" id="L43">  }</span>
+
+  public String getSku() {
+<span class="nc" id="L46">    return sku;</span>
+  }
+
+  public int getQuantity() {
+<span class="nc" id="L50">    return quantity;</span>
+  }
+
+  public BigDecimal getUnitPrice() {
+<span class="nc" id="L54">    return unitPrice;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

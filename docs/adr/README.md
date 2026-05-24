@@ -9,7 +9,8 @@ decision, its context, and its consequences.
 |---|---|---|
 | [0001](0001-single-spring-boot-service.md) | Single Spring Boot Service | Superseded |
 | [0002](0002-postgresql-migration.md) | PostgreSQL with Flyway | Accepted |
-| [0003](0003-microservices-decomposition.md) | Decomposition into Microservices | Accepted |
+| [0003](0003-microservices-decomposition.md) | Decomposition into Microservices | Superseded |
+| [0004](0004-modular-monolith-recomposition.md) | Recomposition to Modular Monolith | Accepted |
 
 ## Format
 
