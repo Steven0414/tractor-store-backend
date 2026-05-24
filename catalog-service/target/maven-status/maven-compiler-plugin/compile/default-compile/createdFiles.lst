@@ -1,11 +1,12 @@
-com/tractorstore/config/WebConfig$1.class
-com/tractorstore/model/Product.class
+com/tractorstore/service/ColorDistanceService$Rgb.class
 com/tractorstore/config/WebConfig.class
 com/tractorstore/model/HomeData.class
 com/tractorstore/service/ColorDistanceService.class
-com/tractorstore/controller/CatalogController.class
 com/tractorstore/CatalogServiceApplication.class
 com/tractorstore/model/Category.class
 com/tractorstore/model/Store.class
 com/tractorstore/service/CatalogService.class
+com/tractorstore/config/WebConfig$1.class
+com/tractorstore/model/Product.class
+com/tractorstore/controller/CatalogController.class
 com/tractorstore/data/CatalogData.class
