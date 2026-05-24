@@ -12,6 +12,7 @@ reviewed through pull requests.
 | [Architecture](architecture.md) | Backend architecture and component overview |
 | [API Reference](api-reference.md) | REST API endpoints for all controllers |
 | [Catalog Service](catalog-service.md) | Internal service design and data model |
+| [Database](database.md) | PostgreSQL schema, tables, indexes and migrations |
 | [Development Guide](development.md) | Local setup and development workflow |
 | [Deployment Guide](deployment.md) | Maven build and Docker deployment |
 | [ADR Index](adr/README.md) | Architecture Decision Records |

@@ -1,4 +1,4 @@
-# ADR-0003 — PostgreSQL with Flyway (Modular Monolith Data Architecture)
+# ADR-0002 — PostgreSQL with Flyway (Modular Monolith Data Architecture)
 
 ## Status
 
@@ -100,3 +100,4 @@ logging at `DEBUG` to surface N+1 problems during development.
 ## Related
 
 - [ADR-0001 — Single Spring Boot Service](0001-single-spring-boot-service.md)
+- [ADR-0002 — PostgreSQL with Flyway](0002-postgresql-migration.md)
