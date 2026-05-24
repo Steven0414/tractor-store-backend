@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InventoryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">inventory-service</a> &gt; <a href="index.source.html" class="el_package">com.tractorstore.inventory.service</a> &gt; <span class="el_source">InventoryService.java</span></div><h1>InventoryService.java</h1><pre class="source lang-java linenums">package com.tractorstore.inventory.service;
+
+import com.tractorstore.inventory.model.InventoryStockEntity;
+import com.tractorstore.inventory.model.OrderItemPayload;
+import com.tractorstore.inventory.repository.InventoryStockRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+@Service
+@Transactional
+public class InventoryService {
+
+    private final InventoryStockRepository inventoryStockRepository;
+
+<span class="fc" id="L19">    public InventoryService(InventoryStockRepository inventoryStockRepository) {</span>
+<span class="fc" id="L20">        this.inventoryStockRepository = inventoryStockRepository;</span>
+<span class="fc" id="L21">    }</span>
+
+    @Transactional(readOnly = true)
+    public int getStock(String sku) {
+<span class="fc" id="L25">        return inventoryStockRepository.findBySku(sku)</span>
+<span class="fc" id="L26">                .map(InventoryStockEntity::getQuantity)</span>
+<span class="fc" id="L27">                .orElseThrow(() -&gt; new NoSuchElementException(&quot;SKU not found: &quot; + sku));</span>
+    }
+
+    /** Deducts order quantities from stock. No-op for unknown SKUs. */
+    public void deductStock(List&lt;OrderItemPayload&gt; items) {
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        for (OrderItemPayload item : items) {</span>
+<span class="fc" id="L33">            inventoryStockRepository.findBySku(item.getSku()).ifPresent(stock -&gt; {</span>
+<span class="fc" id="L34">                stock.setQuantity(Math.max(0, stock.getQuantity() - item.getQuantity()));</span>
+<span class="fc" id="L35">                stock.setUpdatedAt(Instant.now());</span>
+<span class="fc" id="L36">                inventoryStockRepository.save(stock);</span>
+<span class="fc" id="L37">            });</span>
+<span class="fc" id="L38">        }</span>
+<span class="fc" id="L39">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,12 @@
+com/tractorstore/inventory/config/WebConfig.class
+com/tractorstore/inventory/controller/EventController.class
+com/tractorstore/inventory/InventoryServiceApplication.class
+com/tractorstore/inventory/controller/InventoryController.class
+com/tractorstore/inventory/config/WebConfig$1.class
+com/tractorstore/inventory/service/InventoryService.class
+com/tractorstore/inventory/model/InventoryStockEntity.class
+com/tractorstore/inventory/model/OrderItemPayload.class
+com/tractorstore/inventory/repository/InventoryStockRepository.class
+com/tractorstore/inventory/model/StockResponse.class
+com/tractorstore/inventory/model/OrderPlacedPayload.class
+com/tractorstore/inventory/exception/GlobalExceptionHandler.class

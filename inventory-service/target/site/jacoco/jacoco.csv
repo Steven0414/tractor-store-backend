@@ -1,0 +1,12 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+inventory-service,com.tractorstore.inventory.model,InventoryStockEntity,12,23,0,0,4,8,4,4,4,4
+inventory-service,com.tractorstore.inventory.model,OrderPlacedPayload,0,36,0,0,0,12,0,8,0,8
+inventory-service,com.tractorstore.inventory.model,OrderItemPayload,0,46,0,0,0,15,0,10,0,10
+inventory-service,com.tractorstore.inventory.model,StockResponse,0,9,0,0,0,1,0,1,0,1
+inventory-service,com.tractorstore.inventory,InventoryServiceApplication,5,3,0,0,2,1,1,1,1,1
+inventory-service,com.tractorstore.inventory.config,WebConfig,8,0,0,0,2,0,2,0,2,0
+inventory-service,com.tractorstore.inventory.config,WebConfig.new WebMvcConfigurer() {...},93,0,0,0,12,0,2,0,2,0
+inventory-service,com.tractorstore.inventory.exception,GlobalExceptionHandler,63,19,0,0,18,6,4,2,4,2
+inventory-service,com.tractorstore.inventory.controller,InventoryController,0,18,0,0,0,5,0,2,0,2
+inventory-service,com.tractorstore.inventory.controller,EventController,0,14,0,0,0,5,0,2,0,2
+inventory-service,com.tractorstore.inventory.service,InventoryService,0,63,0,2,0,14,0,6,0,5
