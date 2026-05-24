@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.net.URI;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 /**
@@ -25,6 +26,15 @@ public class GlobalExceptionHandler {
                 .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
                 .collect(Collectors.joining("; "));
         problem.setDetail(detail);
+        return problem;
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ProblemDetail handleNotFound(NoSuchElementException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setType(URI.create("https://tractorstore.com/errors/not-found"));
+        problem.setTitle("Not Found");
+        problem.setDetail(ex.getMessage());
         return problem;
     }
 

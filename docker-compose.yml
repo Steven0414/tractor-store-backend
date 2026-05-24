@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-tractoruser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tractorpass}
     ports:
-      - "5432:5432"
+      - "54320:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -30,6 +30,56 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  inventory-service:
+    build:
+      context: ./inventory-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tractordb
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-tractoruser}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-tractorpass}
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      catalog-service:
+        condition: service_started
+
+  cart-service:
+    build:
+      context: ./cart-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tractordb
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-tractoruser}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-tractorpass}
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      catalog-service:
+        condition: service_started
+
+  order-service:
+    build:
+      context: ./order-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tractordb
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-tractoruser}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-tractorpass}
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      catalog-service:
+        condition: service_started
+
+  notifications-service:
+    build:
+      context: ./notifications-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
 
 volumes:
   postgres_data:

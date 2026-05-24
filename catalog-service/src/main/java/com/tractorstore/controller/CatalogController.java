@@ -28,6 +28,11 @@ public class CatalogController {
         return ResponseEntity.ok(catalogService.getHome());
     }
 
+    @GetMapping("/products/{sku}")
+    public ResponseEntity<Product> getProduct(@PathVariable String sku) {
+        return ResponseEntity.ok(catalogService.getProductBySku(sku));
+    }
+
     @GetMapping("/categories/{filter}")
     public ResponseEntity<List<Product>> getCategories(@PathVariable String filter) {
         return ResponseEntity.ok(catalogService.getProductsByFilter(filter));

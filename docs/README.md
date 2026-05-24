@@ -16,24 +16,34 @@ reviewed through pull requests.
 | [Development Guide](development.md) | Local setup and development workflow |
 | [Deployment Guide](deployment.md) | Maven build and Docker deployment |
 | [ADR Index](adr/README.md) | Architecture Decision Records |
+| [ADR-0003](adr/0003-microservices-decomposition.md) | Decomposition into Microservices |
 
 ## Project Overview
 
-The Tractor Store backend consists of a single **Spring Boot 3** service
-(`catalog-service`) that exposes REST APIs consumed by the frontend
-microfrontends.
+The Tractor Store backend is composed of **5 independent Spring Boot 3**
+microservices, each exposing its own REST API and running on a dedicated port.
+All services share a single PostgreSQL database (`tractordb`); schema ownership
+and Flyway migrations belong exclusively to `catalog-service`.
 
 ```
 tractor-store-backend/
-└── catalog-service/          # Spring Boot 3 / Java 17 service (port 8080)
-    └── src/main/java/com/tractorstore/
-        ├── controller/       # REST controllers
-        ├── service/          # Business logic
-        ├── model/            # Domain models & DTOs
-        ├── repository/       # JPA repositories
-        ├── event/            # Domain events
-        ├── listener/         # Event listeners
-        └── data/             # In-memory seed data
+├── docker-compose.yml            # PostgreSQL + all 5 services
+├── .env.example                  # Template for DB credentials
+├── catalog-service/              # :8080 — Catalog, categories, stores, recommendations
+├── inventory-service/            # :8081 — Stock levels per SKU
+├── cart-service/                 # :8082 — Session cart management
+├── order-service/                # :8083 — Order placement and confirmation
+└── notifications-service/        # :8084 — Email simulation (event demo, no DB)
+    Each service:
+    ├── src/main/java/com/tractorstore/<module>/
+    │   ├── controller/           # REST controllers
+    │   ├── service/              # Business logic
+    │   ├── model/                # Domain models & JPA entities
+    │   ├── repository/           # JPA repositories (not in notifications-service)
+    │   ├── event/                # Domain events (order-service only)
+    │   └── config/               # CORS and beans config
+    ├── pom.xml
+    └── Dockerfile
 ```
 
 ## Contributing to Docs

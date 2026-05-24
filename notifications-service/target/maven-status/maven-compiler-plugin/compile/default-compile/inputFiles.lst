@@ -1,0 +1,5 @@
+/home/steven/Escritorio/tractor-store/tractor-store-backend/notifications-service/src/main/java/com/tractorstore/notifications/NotificationsServiceApplication.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/notifications-service/src/main/java/com/tractorstore/notifications/controller/EventController.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/notifications-service/src/main/java/com/tractorstore/notifications/model/OrderItemPayload.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/notifications-service/src/main/java/com/tractorstore/notifications/model/OrderPlacedPayload.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/notifications-service/src/main/java/com/tractorstore/notifications/service/NotificationService.java

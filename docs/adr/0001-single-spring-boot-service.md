@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by [ADR-0003 — Decomposition into Microservices](0003-microservices-decomposition.md)
 
 ## Context
 
@@ -31,3 +31,9 @@ and service layer level rather than at the network level.
   the cart/order logic.
 - A bug in one area (e.g., order placement) could affect the entire service.
 - Not suitable for a high-traffic production system without decomposition.
+
+## Supersession Note
+
+This decision was revisited as the project's domain complexity grew. See
+[ADR-0003](0003-microservices-decomposition.md) for the rationale behind
+extracting each bounded context into its own Spring Boot service.

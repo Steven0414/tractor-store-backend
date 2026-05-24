@@ -9,96 +9,104 @@
 
 ## Building
 
-### Maven (JAR)
+### Maven (all services)
 
 ```bash
-cd catalog-service
-./mvnw clean package -DskipTests
-java -jar target/catalog-service-1.0.0.jar
+for svc in catalog-service inventory-service cart-service order-service notifications-service; do
+  (cd $svc && ./mvnw clean package -DskipTests)
+done
 ```
 
-### Docker
+### Docker (all services)
 
 ```bash
-# Build image
-docker build -t tractor-store/catalog-service:latest ./catalog-service
+for svc in catalog-service inventory-service cart-service order-service notifications-service; do
+  docker build -t tractor-store/$svc:latest ./$svc
+done
+```
 
-# Run container (point to an existing PostgreSQL instance)
+## Docker Compose (recommended for local development)
+
+```bash
+cd tractor-store-backend
+cp .env.example .env   # set credentials if needed
+docker compose up
+```
+
+## Running Individual Containers
+
+```bash
+# catalog-service (must run first — owns Flyway migrations)
 docker run -p 8080:8080 \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:5432/tractordb \
   -e SPRING_DATASOURCE_USERNAME=tractoruser \
   -e SPRING_DATASOURCE_PASSWORD=<password> \
   tractor-store/catalog-service:latest
-```
 
-### Docker Compose (local development)
+# inventory-service
+docker run -p 8081:8081 \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:5432/tractordb \
+  -e SPRING_DATASOURCE_USERNAME=tractoruser \
+  -e SPRING_DATASOURCE_PASSWORD=<password> \
+  tractor-store/inventory-service:latest
 
-```bash
-cd tractor-store-backend
-cp .env.example .env   # set credentials
-docker compose up
+# Similar for cart-service (:8082) and order-service (:8083)
+
+# notifications-service (no DB)
+docker run -p 8084:8084 tractor-store/notifications-service:latest
 ```
 
 ## Dockerfile Overview
 
-Two-stage build: Maven compiles the JAR, then a minimal JRE image runs it.
+All services follow the same pattern:
 
 ```dockerfile
-FROM maven:3.9-eclipse-temurin-17-alpine AS builder
-# ... compile + package
-
 FROM eclipse-temurin:17-jre-alpine
-EXPOSE 8080
+WORKDIR /app
+COPY target/<service>-*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
 ## Schema Management
 
-Flyway runs automatically on startup and applies any pending migrations:
+Flyway runs automatically on `catalog-service` startup:
 
 ```
-db/migration/
-  V1__initial_schema.sql     ← All module tables (catalog_, inventory_, cart_, order_)
-  V2__seed_catalog_data.sql  ← Products, categories, stores
+catalog-service/src/main/resources/db/migration/
+  V1__initial_schema.sql       ← All module tables (catalog_*, inventory_*, cart_*, order_*)
+  V2__seed_catalog_data.sql    ← Products, categories, stores
   V3__seed_inventory_stock.sql ← Initial inventory (10 units/SKU)
 ```
 
-**Never** set `spring.jpa.hibernate.ddl-auto=update` or `create-drop` in
-production. The production default is `validate`.
+> Always start `catalog-service` before other services in production.
 
 ## Environment Variables
 
-| Variable | Default | Description |
+| Variable | Default | Used by |
 |---|---|---|
-| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/tractordb` | JDBC connection string |
-| `SPRING_DATASOURCE_USERNAME` | `tractoruser` | DB user |
-| `SPRING_DATASOURCE_PASSWORD` | `tractorpass` | DB password |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://localhost:5432/tractordb` | All DB services |
+| `SPRING_DATASOURCE_USERNAME` | `tractoruser` | All DB services |
+| `SPRING_DATASOURCE_PASSWORD` | `tractorpass` | All DB services |
 | `SPRING_PROFILES_ACTIVE` | *(none)* | Set to `dev` for SQL logging |
+| `ORDER_EVENTS_ORDER-PLACED_SUBSCRIBERS` | *(see app.properties)* | order-service only |
 
-## CORS in Production
+## Event Subscriber Configuration (order-service)
 
-Update `WebConfig` to restrict allowed origins to the actual frontend domains
-before deploying to production:
-
-```java
-registry.addMapping("/api/**")
-    .allowedOrigins("https://explore.tractorstore.com",
-                    "https://decide.tractorstore.com",
-                    "https://checkout.tractorstore.com");
+```properties
+# application.properties — Docker/production URLs
+order.events.order-placed.subscribers=\
+  http://inventory-service:8081/internal/events/order-placed,\
+  http://cart-service:8082/internal/events/order-placed,\
+  http://notifications-service:8084/internal/events/order-placed
 ```
-
-## Health Check
-
-```bash
-curl -f http://localhost:8080/actuator/health
-```
-
-> Add `spring-boot-starter-actuator` to `pom.xml` to enable `/actuator/health`.
 
 ## Port Summary
 
 | Service | Default port |
 |---|---|
 | catalog-service | 8080 |
-| PostgreSQL | 5432 |
-
+| inventory-service | 8081 |
+| cart-service | 8082 |
+| order-service | 8083 |
+| notifications-service | 8084 |
+| PostgreSQL | 5432 (host: 54320) |

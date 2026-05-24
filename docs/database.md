@@ -10,6 +10,8 @@
 | Migration tool | [Flyway](https://flywaydb.org/) |
 | ORM | Hibernate / JPA (schema read-only — `ddl-auto=validate`) |
 
+Schema migrations are run exclusively by `catalog-service` at startup. All other services connect to the same `tractordb` database but have `spring.flyway.enabled=false`.
+
 Schema changes are managed exclusively through Flyway migrations located at:
 
 ```
@@ -273,10 +275,18 @@ Connection parameters are injected via environment variables or `application.pro
 
 **HikariCP pool settings:**
 
+| Service | `maximum-pool-size` | `minimum-idle` |
+|---|---|---|
+| catalog-service | 10 | 2 |
+| inventory-service | 5 | 1 |
+| cart-service | 5 | 1 |
+| order-service | 5 | 1 |
+| notifications-service | — (no DB) | — |
+
+Other HikariCP settings (all services):
+
 | Setting | Value |
 |---|---|
-| `maximum-pool-size` | 10 |
-| `minimum-idle` | 2 |
 | `idle-timeout` | 30 000 ms |
 | `connection-timeout` | 20 000 ms |
 | `max-lifetime` | 1 800 000 ms (30 min) |
