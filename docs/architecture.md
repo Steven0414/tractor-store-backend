@@ -79,5 +79,5 @@ Each module owns its tables exclusively. Cross-module SQL JOINs are prohibited.
 ## Related ADRs
 
 - [ADR-0001 — Single Spring Boot service](adr/0001-single-spring-boot-service.md)
-- [ADR-0003 — PostgreSQL with Flyway](adr/0003-postgresql-migration.md)
+- [ADR-0002 — PostgreSQL with Flyway](adr/0002-postgresql-migration.md)
 
