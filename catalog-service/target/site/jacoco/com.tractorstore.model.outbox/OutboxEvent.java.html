@@ -34,23 +34,23 @@ public class OutboxEvent {
     @Column(name = &quot;created_at&quot;, nullable = false)
     private Instant createdAt;
 
-<span class="nc" id="L37">    @Column(nullable = false)</span>
+<span class="pc" id="L37">    @Column(nullable = false)</span>
     private boolean processed = false;
 
 <span class="nc" id="L40">    public OutboxEvent() {}</span>
 
-<span class="nc" id="L42">    public OutboxEvent(String aggregateType, String aggregateId, String eventType, String payload) {</span>
-<span class="nc" id="L43">        this.aggregateType = aggregateType;</span>
-<span class="nc" id="L44">        this.aggregateId = aggregateId;</span>
-<span class="nc" id="L45">        this.eventType = eventType;</span>
-<span class="nc" id="L46">        this.payload = payload;</span>
-<span class="nc" id="L47">        this.createdAt = Instant.now();</span>
-<span class="nc" id="L48">    }</span>
+<span class="fc" id="L42">    public OutboxEvent(String aggregateType, String aggregateId, String eventType, String payload) {</span>
+<span class="fc" id="L43">        this.aggregateType = aggregateType;</span>
+<span class="fc" id="L44">        this.aggregateId = aggregateId;</span>
+<span class="fc" id="L45">        this.eventType = eventType;</span>
+<span class="fc" id="L46">        this.payload = payload;</span>
+<span class="fc" id="L47">        this.createdAt = Instant.now();</span>
+<span class="fc" id="L48">    }</span>
 
 <span class="nc" id="L50">    public UUID getId() { return id; }</span>
-<span class="nc" id="L51">    public String getAggregateType() { return aggregateType; }</span>
+<span class="fc" id="L51">    public String getAggregateType() { return aggregateType; }</span>
 <span class="nc" id="L52">    public String getAggregateId() { return aggregateId; }</span>
-<span class="nc" id="L53">    public String getEventType() { return eventType; }</span>
+<span class="fc" id="L53">    public String getEventType() { return eventType; }</span>
 <span class="nc" id="L54">    public String getPayload() { return payload; }</span>
 <span class="nc" id="L55">    public Instant getCreatedAt() { return createdAt; }</span>
 <span class="nc" id="L56">    public boolean isProcessed() { return processed; }</span>

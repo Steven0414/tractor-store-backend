@@ -36,24 +36,24 @@ public class CartItemEntity {
 
 <span class="nc" id="L37">    public CartItemEntity() {}</span>
 
-<span class="nc" id="L39">    public CartItemEntity(String sessionId, String sku, String name, int quantity, BigDecimal price) {</span>
-<span class="nc" id="L40">        this.sessionId = sessionId;</span>
-<span class="nc" id="L41">        this.sku = sku;</span>
-<span class="nc" id="L42">        this.name = name;</span>
-<span class="nc" id="L43">        this.quantity = quantity;</span>
-<span class="nc" id="L44">        this.price = price;</span>
-<span class="nc" id="L45">        this.addedAt = Instant.now();</span>
-<span class="nc" id="L46">    }</span>
+<span class="fc" id="L39">    public CartItemEntity(String sessionId, String sku, String name, int quantity, BigDecimal price) {</span>
+<span class="fc" id="L40">        this.sessionId = sessionId;</span>
+<span class="fc" id="L41">        this.sku = sku;</span>
+<span class="fc" id="L42">        this.name = name;</span>
+<span class="fc" id="L43">        this.quantity = quantity;</span>
+<span class="fc" id="L44">        this.price = price;</span>
+<span class="fc" id="L45">        this.addedAt = Instant.now();</span>
+<span class="fc" id="L46">    }</span>
 
 <span class="nc" id="L48">    public UUID getId() { return id; }</span>
 <span class="nc" id="L49">    public String getSessionId() { return sessionId; }</span>
-<span class="nc" id="L50">    public String getSku() { return sku; }</span>
-<span class="nc" id="L51">    public String getName() { return name; }</span>
+<span class="fc" id="L50">    public String getSku() { return sku; }</span>
+<span class="fc" id="L51">    public String getName() { return name; }</span>
 
-<span class="nc" id="L53">    public int getQuantity() { return quantity; }</span>
-<span class="nc" id="L54">    public void setQuantity(int quantity) { this.quantity = quantity; }</span>
+<span class="fc" id="L53">    public int getQuantity() { return quantity; }</span>
+<span class="fc" id="L54">    public void setQuantity(int quantity) { this.quantity = quantity; }</span>
 
-<span class="nc" id="L56">    public BigDecimal getPrice() { return price; }</span>
+<span class="fc" id="L56">    public BigDecimal getPrice() { return price; }</span>
 
 <span class="nc" id="L58">    public Instant getAddedAt() { return addedAt; }</span>
 }

@@ -15,9 +15,9 @@ public class OrderController {
 
     private final OrderService orderService;
 
-<span class="nc" id="L18">    public OrderController(OrderService orderService) {</span>
-<span class="nc" id="L19">        this.orderService = orderService;</span>
-<span class="nc" id="L20">    }</span>
+<span class="fc" id="L18">    public OrderController(OrderService orderService) {</span>
+<span class="fc" id="L19">        this.orderService = orderService;</span>
+<span class="fc" id="L20">    }</span>
 
     /**
      * POST /api/orders
@@ -27,8 +27,8 @@ public class OrderController {
     public ResponseEntity&lt;PlaceOrderResponse&gt; placeOrder(
             @Valid @RequestBody PlaceOrderRequest request,
             HttpSession session) {
-<span class="nc" id="L30">        PlaceOrderResponse response = orderService.placeOrder(request, session.getId());</span>
-<span class="nc" id="L31">        return ResponseEntity.status(HttpStatus.CREATED).body(response);</span>
+<span class="fc" id="L30">        PlaceOrderResponse response = orderService.placeOrder(request, session.getId());</span>
+<span class="fc" id="L31">        return ResponseEntity.status(HttpStatus.CREATED).body(response);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

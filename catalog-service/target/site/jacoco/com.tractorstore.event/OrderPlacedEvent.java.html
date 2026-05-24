@@ -12,14 +12,14 @@ public class OrderPlacedEvent extends ApplicationEvent {
     private final List&lt;OrderItem&gt; items;
 
     public OrderPlacedEvent(Object source, String orderId, String sessionId, List&lt;OrderItem&gt; items) {
-<span class="nc" id="L15">        super(source);</span>
-<span class="nc" id="L16">        this.orderId = orderId;</span>
-<span class="nc" id="L17">        this.sessionId = sessionId;</span>
-<span class="nc" id="L18">        this.items = items;</span>
-<span class="nc" id="L19">    }</span>
+<span class="fc" id="L15">        super(source);</span>
+<span class="fc" id="L16">        this.orderId = orderId;</span>
+<span class="fc" id="L17">        this.sessionId = sessionId;</span>
+<span class="fc" id="L18">        this.items = items;</span>
+<span class="fc" id="L19">    }</span>
 
 <span class="nc" id="L21">    public String getOrderId() { return orderId; }</span>
-<span class="nc" id="L22">    public String getSessionId() { return sessionId; }</span>
-<span class="nc" id="L23">    public List&lt;OrderItem&gt; getItems() { return items; }</span>
+<span class="fc" id="L22">    public String getSessionId() { return sessionId; }</span>
+<span class="fc" id="L23">    public List&lt;OrderItem&gt; getItems() { return items; }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

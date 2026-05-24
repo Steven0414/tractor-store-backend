@@ -32,13 +32,13 @@ public class OrderItemEntity {
 
 <span class="nc" id="L33">    public OrderItemEntity() {}</span>
 
-<span class="nc" id="L35">    public OrderItemEntity(UUID orderId, OrderItem item) {</span>
-<span class="nc" id="L36">        this.orderId = orderId;</span>
-<span class="nc" id="L37">        this.sku = item.getSku();</span>
-<span class="nc" id="L38">        this.name = item.getName();</span>
-<span class="nc" id="L39">        this.quantity = item.getQuantity();</span>
-<span class="nc" id="L40">        this.price = BigDecimal.valueOf(item.getPrice());</span>
-<span class="nc" id="L41">    }</span>
+<span class="fc" id="L35">    public OrderItemEntity(UUID orderId, OrderItem item) {</span>
+<span class="fc" id="L36">        this.orderId = orderId;</span>
+<span class="fc" id="L37">        this.sku = item.getSku();</span>
+<span class="fc" id="L38">        this.name = item.getName();</span>
+<span class="fc" id="L39">        this.quantity = item.getQuantity();</span>
+<span class="fc" id="L40">        this.price = BigDecimal.valueOf(item.getPrice());</span>
+<span class="fc" id="L41">    }</span>
 
 <span class="nc" id="L43">    public UUID getId() { return id; }</span>
 <span class="nc" id="L44">    public UUID getOrderId() { return orderId; }</span>

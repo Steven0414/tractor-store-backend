@@ -19,54 +19,54 @@ public class CartService {
 
     private final CartItemRepository cartItemRepository;
 
-<span class="nc" id="L22">    public CartService(CartItemRepository cartItemRepository) {</span>
-<span class="nc" id="L23">        this.cartItemRepository = cartItemRepository;</span>
-<span class="nc" id="L24">    }</span>
+<span class="fc" id="L22">    public CartService(CartItemRepository cartItemRepository) {</span>
+<span class="fc" id="L23">        this.cartItemRepository = cartItemRepository;</span>
+<span class="fc" id="L24">    }</span>
 
     @Transactional(readOnly = true)
     public Cart getCart(HttpSession session) {
-<span class="nc" id="L28">        List&lt;CartItem&gt; items = cartItemRepository</span>
-<span class="nc" id="L29">            .findBySessionId(session.getId())</span>
-<span class="nc" id="L30">            .stream()</span>
-<span class="nc" id="L31">            .map(CartService::toDto)</span>
-<span class="nc" id="L32">            .toList();</span>
-<span class="nc" id="L33">        return new Cart(items);</span>
+<span class="fc" id="L28">        List&lt;CartItem&gt; items = cartItemRepository</span>
+<span class="fc" id="L29">            .findBySessionId(session.getId())</span>
+<span class="fc" id="L30">            .stream()</span>
+<span class="fc" id="L31">            .map(CartService::toDto)</span>
+<span class="fc" id="L32">            .toList();</span>
+<span class="fc" id="L33">        return new Cart(items);</span>
     }
 
     @Transactional(readOnly = true)
     public MiniCart getMiniCart(HttpSession session) {
-<span class="nc" id="L38">        Cart cart = getCart(session);</span>
-<span class="nc" id="L39">        return new MiniCart(cart.getItemCount(), cart.getTotal());</span>
+<span class="fc" id="L38">        Cart cart = getCart(session);</span>
+<span class="fc" id="L39">        return new MiniCart(cart.getItemCount(), cart.getTotal());</span>
     }
 
     public Cart addItem(HttpSession session, AddCartItemRequest request) {
-<span class="nc" id="L43">        String sessionId = session.getId();</span>
-<span class="nc" id="L44">        cartItemRepository.findBySessionIdAndSku(sessionId, request.getSku())</span>
-<span class="nc" id="L45">            .ifPresentOrElse(</span>
+<span class="fc" id="L43">        String sessionId = session.getId();</span>
+<span class="fc" id="L44">        cartItemRepository.findBySessionIdAndSku(sessionId, request.getSku())</span>
+<span class="fc" id="L45">            .ifPresentOrElse(</span>
                 existing -&gt; {
-<span class="nc" id="L47">                    existing.setQuantity(existing.getQuantity() + Math.max(1, request.getQuantity()));</span>
-<span class="nc" id="L48">                    cartItemRepository.save(existing);</span>
-<span class="nc" id="L49">                },</span>
+<span class="fc" id="L47">                    existing.setQuantity(existing.getQuantity() + Math.max(1, request.getQuantity()));</span>
+<span class="fc" id="L48">                    cartItemRepository.save(existing);</span>
+<span class="fc" id="L49">                },</span>
                 () -&gt; {
-<span class="nc" id="L51">                    CartItemEntity entity = new CartItemEntity(</span>
+<span class="fc" id="L51">                    CartItemEntity entity = new CartItemEntity(</span>
                         sessionId,
-<span class="nc" id="L53">                        request.getSku(),</span>
-<span class="nc" id="L54">                        request.getName(),</span>
-<span class="nc" id="L55">                        Math.max(1, request.getQuantity()),</span>
-<span class="nc" id="L56">                        BigDecimal.valueOf(request.getPrice())</span>
+<span class="fc" id="L53">                        request.getSku(),</span>
+<span class="fc" id="L54">                        request.getName(),</span>
+<span class="fc" id="L55">                        Math.max(1, request.getQuantity()),</span>
+<span class="fc" id="L56">                        BigDecimal.valueOf(request.getPrice())</span>
                     );
-<span class="nc" id="L58">                    cartItemRepository.save(entity);</span>
-<span class="nc" id="L59">                }</span>
+<span class="fc" id="L58">                    cartItemRepository.save(entity);</span>
+<span class="fc" id="L59">                }</span>
             );
-<span class="nc" id="L61">        return getCart(session);</span>
+<span class="fc" id="L61">        return getCart(session);</span>
     }
 
     private static CartItem toDto(CartItemEntity entity) {
-<span class="nc" id="L65">        return new CartItem(</span>
-<span class="nc" id="L66">            entity.getSku(),</span>
-<span class="nc" id="L67">            entity.getName(),</span>
-<span class="nc" id="L68">            entity.getQuantity(),</span>
-<span class="nc" id="L69">            entity.getPrice().doubleValue()</span>
+<span class="fc" id="L65">        return new CartItem(</span>
+<span class="fc" id="L66">            entity.getSku(),</span>
+<span class="fc" id="L67">            entity.getName(),</span>
+<span class="fc" id="L68">            entity.getQuantity(),</span>
+<span class="fc" id="L69">            entity.getPrice().doubleValue()</span>
         );
     }
 }

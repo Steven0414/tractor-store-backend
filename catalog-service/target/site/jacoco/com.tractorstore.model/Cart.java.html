@@ -10,19 +10,19 @@ public class Cart {
 
 <span class="nc" id="L11">    public Cart() {}</span>
 
-<span class="nc" id="L13">    public Cart(List&lt;CartItem&gt; items) {</span>
-<span class="nc" id="L14">        this.items = items;</span>
-<span class="nc" id="L15">        this.itemCount = items.stream().mapToInt(CartItem::getQuantity).sum();</span>
-<span class="nc" id="L16">        this.total = items.stream().mapToDouble(CartItem::getSubtotal).sum();</span>
-<span class="nc" id="L17">    }</span>
+<span class="fc" id="L13">    public Cart(List&lt;CartItem&gt; items) {</span>
+<span class="fc" id="L14">        this.items = items;</span>
+<span class="fc" id="L15">        this.itemCount = items.stream().mapToInt(CartItem::getQuantity).sum();</span>
+<span class="fc" id="L16">        this.total = items.stream().mapToDouble(CartItem::getSubtotal).sum();</span>
+<span class="fc" id="L17">    }</span>
 
-<span class="nc" id="L19">    public List&lt;CartItem&gt; getItems() { return items; }</span>
+<span class="fc" id="L19">    public List&lt;CartItem&gt; getItems() { return items; }</span>
 <span class="nc" id="L20">    public void setItems(List&lt;CartItem&gt; items) { this.items = items; }</span>
 
-<span class="nc" id="L22">    public int getItemCount() { return itemCount; }</span>
+<span class="fc" id="L22">    public int getItemCount() { return itemCount; }</span>
 <span class="nc" id="L23">    public void setItemCount(int itemCount) { this.itemCount = itemCount; }</span>
 
-<span class="nc" id="L25">    public double getTotal() { return total; }</span>
+<span class="fc" id="L25">    public double getTotal() { return total; }</span>
 <span class="nc" id="L26">    public void setTotal(double total) { this.total = total; }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

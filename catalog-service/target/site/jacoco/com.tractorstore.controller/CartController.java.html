@@ -18,9 +18,9 @@ public class CartController {
 
     private final CartService cartService;
 
-<span class="nc" id="L21">    public CartController(CartService cartService) {</span>
-<span class="nc" id="L22">        this.cartService = cartService;</span>
-<span class="nc" id="L23">    }</span>
+<span class="fc" id="L21">    public CartController(CartService cartService) {</span>
+<span class="fc" id="L22">        this.cartService = cartService;</span>
+<span class="fc" id="L23">    }</span>
 
     /**
      * GET /api/cart
@@ -28,7 +28,7 @@ public class CartController {
      */
     @GetMapping
     public ResponseEntity&lt;Cart&gt; getCart(HttpSession session) {
-<span class="nc" id="L31">        return ResponseEntity.ok(cartService.getCart(session));</span>
+<span class="fc" id="L31">        return ResponseEntity.ok(cartService.getCart(session));</span>
     }
 
     /**
@@ -37,7 +37,7 @@ public class CartController {
      */
     @GetMapping(&quot;/mini&quot;)
     public ResponseEntity&lt;MiniCart&gt; getMiniCart(HttpSession session) {
-<span class="nc" id="L40">        return ResponseEntity.ok(cartService.getMiniCart(session));</span>
+<span class="fc" id="L40">        return ResponseEntity.ok(cartService.getMiniCart(session));</span>
     }
 
     /**
@@ -48,7 +48,7 @@ public class CartController {
     public ResponseEntity&lt;Cart&gt; addItem(
             HttpSession session,
             @RequestBody AddCartItemRequest request) {
-<span class="nc" id="L51">        return ResponseEntity.ok(cartService.addItem(session, request));</span>
+<span class="fc" id="L51">        return ResponseEntity.ok(cartService.addItem(session, request));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

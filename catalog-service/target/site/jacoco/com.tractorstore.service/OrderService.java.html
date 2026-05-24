@@ -32,49 +32,49 @@ public class OrderService {
                         OrderItemRepository orderItemRepository,
                         OutboxEventRepository outboxRepository,
                         ApplicationEventPublisher eventPublisher,
-<span class="nc" id="L35">                        ObjectMapper objectMapper) {</span>
-<span class="nc" id="L36">        this.orderRepository = orderRepository;</span>
-<span class="nc" id="L37">        this.orderItemRepository = orderItemRepository;</span>
-<span class="nc" id="L38">        this.outboxRepository = outboxRepository;</span>
-<span class="nc" id="L39">        this.eventPublisher = eventPublisher;</span>
-<span class="nc" id="L40">        this.objectMapper = objectMapper;</span>
-<span class="nc" id="L41">    }</span>
+<span class="fc" id="L35">                        ObjectMapper objectMapper) {</span>
+<span class="fc" id="L36">        this.orderRepository = orderRepository;</span>
+<span class="fc" id="L37">        this.orderItemRepository = orderItemRepository;</span>
+<span class="fc" id="L38">        this.outboxRepository = outboxRepository;</span>
+<span class="fc" id="L39">        this.eventPublisher = eventPublisher;</span>
+<span class="fc" id="L40">        this.objectMapper = objectMapper;</span>
+<span class="fc" id="L41">    }</span>
 
     @Transactional
     public PlaceOrderResponse placeOrder(PlaceOrderRequest request, String sessionId) {
-<span class="nc" id="L45">        UUID orderId = UUID.randomUUID();</span>
-<span class="nc" id="L46">        BigDecimal total = request.getItems().stream()</span>
-<span class="nc" id="L47">            .map(i -&gt; BigDecimal.valueOf(i.getPrice()).multiply(BigDecimal.valueOf(i.getQuantity())))</span>
-<span class="nc" id="L48">            .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="fc" id="L45">        UUID orderId = UUID.randomUUID();</span>
+<span class="fc" id="L46">        BigDecimal total = request.getItems().stream()</span>
+<span class="fc" id="L47">            .map(i -&gt; BigDecimal.valueOf(i.getPrice()).multiply(BigDecimal.valueOf(i.getQuantity())))</span>
+<span class="fc" id="L48">            .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
 
         // Persist order and items in the same transaction
-<span class="nc" id="L51">        OrderEntity order = new OrderEntity(</span>
+<span class="fc" id="L51">        OrderEntity order = new OrderEntity(</span>
             orderId,
-<span class="nc" id="L53">            request.getFirstName(), request.getLastName(), request.getEmail(),</span>
-<span class="nc" id="L54">            request.getPhone(), request.getAddress(), request.getCity(),</span>
-<span class="nc" id="L55">            request.getPostalCode(), request.getPaymentMethod(),</span>
+<span class="fc" id="L53">            request.getFirstName(), request.getLastName(), request.getEmail(),</span>
+<span class="fc" id="L54">            request.getPhone(), request.getAddress(), request.getCity(),</span>
+<span class="fc" id="L55">            request.getPostalCode(), request.getPaymentMethod(),</span>
             total, &quot;CONFIRMED&quot;
         );
-<span class="nc" id="L58">        orderRepository.save(order);</span>
+<span class="fc" id="L58">        orderRepository.save(order);</span>
 
-<span class="nc" id="L60">        List&lt;OrderItemEntity&gt; items = request.getItems().stream()</span>
-<span class="nc" id="L61">            .map(item -&gt; new OrderItemEntity(orderId, item))</span>
-<span class="nc" id="L62">            .toList();</span>
-<span class="nc" id="L63">        orderItemRepository.saveAll(items);</span>
+<span class="fc" id="L60">        List&lt;OrderItemEntity&gt; items = request.getItems().stream()</span>
+<span class="fc" id="L61">            .map(item -&gt; new OrderItemEntity(orderId, item))</span>
+<span class="fc" id="L62">            .toList();</span>
+<span class="fc" id="L63">        orderItemRepository.saveAll(items);</span>
 
         // Write Outbox entry in the same transaction (guarantees at-least-once delivery)
-<span class="nc" id="L66">        String payload = serialize(request);</span>
-<span class="nc" id="L67">        outboxRepository.save(new OutboxEvent(&quot;Order&quot;, orderId.toString(), &quot;OrderPlaced&quot;, payload));</span>
+<span class="fc" id="L66">        String payload = serialize(request);</span>
+<span class="fc" id="L67">        outboxRepository.save(new OutboxEvent(&quot;Order&quot;, orderId.toString(), &quot;OrderPlaced&quot;, payload));</span>
 
         // Publish domain event (listeners fire AFTER_COMMIT)
-<span class="nc" id="L70">        eventPublisher.publishEvent(new OrderPlacedEvent(this, orderId.toString(), sessionId, request.getItems()));</span>
+<span class="fc" id="L70">        eventPublisher.publishEvent(new OrderPlacedEvent(this, orderId.toString(), sessionId, request.getItems()));</span>
 
-<span class="nc" id="L72">        return new PlaceOrderResponse(orderId.toString(), &quot;CONFIRMED&quot;, total.doubleValue());</span>
+<span class="fc" id="L72">        return new PlaceOrderResponse(orderId.toString(), &quot;CONFIRMED&quot;, total.doubleValue());</span>
     }
 
     private String serialize(Object obj) {
         try {
-<span class="nc" id="L77">            return objectMapper.writeValueAsString(obj);</span>
+<span class="fc" id="L77">            return objectMapper.writeValueAsString(obj);</span>
 <span class="nc" id="L78">        } catch (JsonProcessingException e) {</span>
 <span class="nc" id="L79">            return &quot;{}&quot;;</span>
         }

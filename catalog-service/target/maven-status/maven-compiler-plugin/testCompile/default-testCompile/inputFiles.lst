@@ -1,1 +1,11 @@
+/home/steven/Escritorio/tractor-store/tractor-store-backend/catalog-service/src/test/java/com/tractorstore/controller/CartControllerTest.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/catalog-service/src/test/java/com/tractorstore/controller/CatalogControllerTest.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/catalog-service/src/test/java/com/tractorstore/controller/OrderControllerTest.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/catalog-service/src/test/java/com/tractorstore/exception/GlobalExceptionHandlerTest.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/catalog-service/src/test/java/com/tractorstore/listener/CartEventListenerTest.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/catalog-service/src/test/java/com/tractorstore/listener/InventoryEventListenerTest.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/catalog-service/src/test/java/com/tractorstore/service/CartServiceTest.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/catalog-service/src/test/java/com/tractorstore/service/CatalogServiceTest.java
 /home/steven/Escritorio/tractor-store/tractor-store-backend/catalog-service/src/test/java/com/tractorstore/service/ColorDistanceServiceTest.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/catalog-service/src/test/java/com/tractorstore/service/InventoryServiceTest.java
+/home/steven/Escritorio/tractor-store/tractor-store-backend/catalog-service/src/test/java/com/tractorstore/service/OrderServiceTest.java
