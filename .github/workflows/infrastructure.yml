@@ -4,9 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - 'tractor-store/Dockerfile'
-      - 'tractor-store/pom.xml'
-      - 'tractor-store/src/**'
+      - 'Dockerfile'
+      - 'pom.xml'
+      - 'src/**'
       - '.github/workflows/infrastructure.yml'
   workflow_dispatch:
     inputs:
@@ -33,7 +33,7 @@ jobs:
       - name: Lint tractor-store Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: tractor-store/Dockerfile
+          dockerfile: Dockerfile
 
   # ─── 2. Build JAR & Docker Image ─────────────────────────────────────────────
   build-push:
@@ -56,14 +56,14 @@ jobs:
 
       - name: Extract project version from pom.xml
         id: version
-        working-directory: tractor-store
+        working-directory: .
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Project version: ${VERSION}"
 
       - name: Build JAR (tests covered in build-deploy pipeline)
-        working-directory: tractor-store
+        working-directory: .
         run: mvn package -DskipTests --no-transfer-progress
 
       - name: Compute image name (lowercase)
@@ -96,8 +96,8 @@ jobs:
       - name: Build & push tractor-store image
         uses: docker/build-push-action@v5
         with:
-          context: ./tractor-store
-          file: ./tractor-store/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
